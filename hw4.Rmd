@@ -1,0 +1,84 @@
+---
+title: "hw4"
+author: "Jingran"
+date: "29/10/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load Packages
+```{r}
+library(sf)
+library(here)
+library(tidyverse)
+library(janitor)
+library(dplyr)
+library(countrycode)
+library(rgdal)
+library(tmap)
+library(tmaptools)
+library(plotly)
+```
+
+## read data
+```{r}
+GII <- read_csv(here("Gender_Inequality_Index.csv"),
+                locale = locale(encoding = "latin1"),
+                na="..", skip = 5)
+map <- st_read(here("World_Countries", "World_Countries__Generalized_.shp"))
+```
+
+## sort and select data and use countrycode() to add the isocode
+##iso2c is two letters country code, (iso3 for 3 letters)
+## calculate the GII difference and add a new colum into the GIIcols
+```{r}
+GIIcols <- GII %>% 
+  clean_names() %>% 
+  slice(1:189,) %>%
+  select(country, x2019, x2010) %>% 
+  mutate(difference= x2019-x2010) %>% 
+  mutate(iso_code=countrycode(GIIcols$country, origin='country.name', destination = 'iso2c'))
+```
+
+##join csv. and shp.
+##left joining
+```{r}
+join_map <- map %>% 
+  clean_names() %>% 
+  left_join(.,GIIcols,
+            by = c("aff_iso" = "iso_code"))
+```
+
+##plot
+```{r}
+tmap_mode("plot")
+qtm(join_map, 
+    fill = "difference")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
